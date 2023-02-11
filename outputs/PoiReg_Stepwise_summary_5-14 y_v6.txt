@@ -1,0 +1,72 @@
+
+Call:
+glm(formula = RIR ~ improved_water + annual_rainfall + stunting_prev + 
+    HIV_prev + travel_time_city + elevation + distance_water + 
+    piped_water + piped_sanitation + surface_water + open_defecation + 
+    wasting + pop_size, family = poisson(), data = sub.dat2)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q  
+-7.6123  -4.3162  -0.1505   2.2551  
+    Max  
+ 6.8514  
+
+Coefficients:
+                   Estimate
+(Intercept)      -11.679596
+improved_water     0.024425
+annual_rainfall    0.422457
+stunting_prev      5.428915
+HIV_prev           0.051084
+travel_time_city   0.005307
+elevation         -0.468166
+distance_water     0.094623
+piped_water        0.010324
+piped_sanitation   0.024697
+surface_water      0.057160
+open_defecation    0.012069
+wasting           19.545292
+pop_size           0.506041
+                 Std. Error z value
+(Intercept)        1.493226  -7.822
+improved_water     0.005263   4.641
+annual_rainfall    0.067844   6.227
+stunting_prev      1.472123   3.688
+HIV_prev           0.012159   4.201
+travel_time_city   0.001591   3.335
+elevation          0.218060  -2.147
+distance_water     0.009911   9.547
+piped_water        0.002694   3.831
+piped_sanitation   0.003097   7.973
+surface_water      0.007391   7.733
+open_defecation    0.003766   3.205
+wasting            2.227009   8.776
+pop_size           0.061862   8.180
+                 Pr(>|z|)    
+(Intercept)      5.21e-15 ***
+improved_water   3.47e-06 ***
+annual_rainfall  4.76e-10 ***
+stunting_prev    0.000226 ***
+HIV_prev         2.65e-05 ***
+travel_time_city 0.000853 ***
+elevation        0.031796 *  
+distance_water    < 2e-16 ***
+piped_water      0.000127 ***
+piped_sanitation 1.54e-15 ***
+surface_water    1.05e-14 ***
+open_defecation  0.001351 ** 
+wasting           < 2e-16 ***
+pop_size         2.84e-16 ***
+---
+Signif. codes:  
+  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05
+  ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 952.83  on 25  degrees of freedom
+Residual deviance: 416.03  on 12  degrees of freedom
+AIC: 551.06
+
+Number of Fisher Scoring iterations: 6
+

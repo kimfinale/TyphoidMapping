@@ -1,0 +1,62 @@
+
+Call:
+glm.nb(formula = RIR ~ annual_rainfall + stunting_prev + elevation + 
+    distance_water + piped_water + piped_sanitation + surface_water + 
+    pop_size, data = sub.dat2, maxit = 1000, init.theta = 1.361232068, 
+    link = log)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q  
+-2.5411  -0.9412  -0.1399   0.4809  
+    Max  
+ 1.7155  
+
+Coefficients:
+                  Estimate
+(Intercept)      -13.50186
+annual_rainfall    0.69057
+stunting_prev     11.93544
+elevation         -1.15121
+distance_water     0.10056
+piped_water        0.04299
+piped_sanitation   0.02828
+surface_water      0.10444
+pop_size           0.34723
+                 Std. Error z value
+(Intercept)         3.48262  -3.877
+annual_rainfall     0.23832   2.898
+stunting_prev       4.33239   2.755
+elevation           0.69444  -1.658
+distance_water      0.02788   3.607
+piped_water         0.01346   3.194
+piped_sanitation    0.01297   2.181
+surface_water       0.02388   4.374
+pop_size            0.19490   1.782
+                 Pr(>|z|)    
+(Intercept)      0.000106 ***
+annual_rainfall  0.003759 ** 
+stunting_prev    0.005870 ** 
+elevation        0.097365 .  
+distance_water   0.000310 ***
+piped_water      0.001401 ** 
+piped_sanitation 0.029169 *  
+surface_water    1.22e-05 ***
+pop_size         0.074815 .  
+---
+Signif. codes:  
+  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05
+  ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(1.3612) family taken to be 1)
+
+    Null deviance: 62.005  on 23  degrees of freedom
+Residual deviance: 25.832  on 15  degrees of freedom
+AIC: 152.63
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  1.361 
+          Std. Err.:  0.530 
+
+ 2 x log-likelihood:  -132.627 

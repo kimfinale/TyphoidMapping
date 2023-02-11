@@ -1,0 +1,53 @@
+
+Call:
+glm(formula = RIR ~ elevation + distance_water + piped_sanitation + 
+    surface_water + open_defecation + wasting + pop_size, family = poisson(), 
+    data = sub.dat2)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q  
+-1.9429  -1.2609  -0.4851  -0.0250  
+    Max  
+ 5.1387  
+
+Coefficients:
+                  Estimate
+(Intercept)       -3.13158
+elevation         -3.84788
+distance_water     0.08193
+piped_sanitation  -0.11181
+surface_water      0.07934
+open_defecation    0.06778
+wasting          -70.45839
+pop_size           1.31187
+                 Std. Error z value
+(Intercept)         1.34028  -2.337
+elevation           0.86024  -4.473
+distance_water      0.01695   4.833
+piped_sanitation    0.02432  -4.598
+surface_water       0.01468   5.406
+open_defecation     0.01449   4.679
+wasting            11.98795  -5.877
+pop_size            0.20980   6.253
+                 Pr(>|z|)    
+(Intercept)        0.0195 *  
+elevation        7.71e-06 ***
+distance_water   1.35e-06 ***
+piped_sanitation 4.27e-06 ***
+surface_water    6.46e-08 ***
+open_defecation  2.88e-06 ***
+wasting          4.17e-09 ***
+pop_size         4.03e-10 ***
+---
+Signif. codes:  
+  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05
+  ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for poisson family taken to be 1)
+
+    Null deviance: 584.856  on 21  degrees of freedom
+Residual deviance:  49.008  on 14  degrees of freedom
+AIC: 98.121
+
+Number of Fisher Scoring iterations: 9
+

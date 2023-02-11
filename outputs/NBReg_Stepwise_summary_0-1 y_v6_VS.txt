@@ -1,0 +1,54 @@
+
+Call:
+glm.nb(formula = formula2, data = sub.dat2, maxit = 1000, init.theta = 0.4987030349, 
+    link = log)
+
+Deviance Residuals: 
+     Min        1Q    Median  
+-1.69885  -0.56215  -0.10660  
+      3Q       Max  
+-0.00214   1.20430  
+
+Coefficients:
+                  Estimate
+(Intercept)       -1.91862
+elevation         -6.97833
+distance_water     0.17915
+piped_sanitation  -0.19741
+surface_water      0.12185
+wasting          -98.54702
+pop_size           1.85209
+                 Std. Error z value
+(Intercept)         3.17435  -0.604
+elevation           2.53131  -2.757
+distance_water      0.06599   2.715
+piped_sanitation    0.06523  -3.026
+surface_water       0.05339   2.282
+wasting            36.83131  -2.676
+pop_size            0.58682   3.156
+                 Pr(>|z|)   
+(Intercept)       0.54557   
+elevation         0.00584 **
+distance_water    0.00664 **
+piped_sanitation  0.00248 **
+surface_water     0.02247 * 
+wasting           0.00746 **
+pop_size          0.00160 **
+---
+Signif. codes:  
+  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05
+  ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for Negative Binomial(0.4987) family taken to be 1)
+
+    Null deviance: 53.390  on 21  degrees of freedom
+Residual deviance: 12.999  on 15  degrees of freedom
+AIC: 89.486
+
+Number of Fisher Scoring iterations: 1
+
+
+              Theta:  0.499 
+          Std. Err.:  0.273 
+
+ 2 x log-likelihood:  -73.486 
