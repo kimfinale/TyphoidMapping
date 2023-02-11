@@ -10,15 +10,6 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-<!-- No	File name	Description -->
-1	Step2_Linear Regression modeling.R	Checking the multicollinearity and Linear regression modeling 
-2	Step3_Poisson_NB_Regression modeling.R	Poisson and NB regression modeling
-3	Step4_Make the covariates for prediction.R	From all the forecasting covariate datasets, we define the locations for prediction with the smallest observations, and we make the covariate datasets, based on the location information.
-4	Step5_Forecasting_LR.R	Forecasting output from linear regression modeling results
-5	Step5_Forecasting_Poi.R	Forecasting output from Poisson regression modeling results
-6	Step5_Forecasting_NB_Ver1.R	Forecasting output from NB regression modeling results (Ver1)
-7	Step5_Forecasting_NB_Ver2.R	Forecasting output from NB regression modeling results (Ver2)
-
 
 ### Log-linear regression
 
@@ -206,7 +197,7 @@ RMSE.output<-cbind(age.group,RMSE)
 
 ### Poisson regression
 
-```{r poisson, negbin}
+```{r poisson, negbin, eval=FALSE}
 
 library(car)
 library(MASS)
@@ -487,7 +478,7 @@ RMSE.output
 ### Prepare covariates for prediction
 
 I may change this code simply to raster::resample
-```{r}
+```{r covprep, eval=FALSE}
 library(viridis)
 library(raster)
 library(ggplot2)
@@ -583,7 +574,7 @@ new.dat2<-na.omit(new.dat) # 59420    17
 ```
 
 ### Forecasting for the log-linear model
-```{r}
+```{r forecast_loglinear, eval=FALSE}
 library(car)
 library(MASS)
 library(ciTools)
@@ -658,7 +649,7 @@ for(j in 1:length(age.group)) {
 
 
 ### Forecasting for the NegBin (ver 1) 
-```{r}
+```{r forecast_negbin_ver1, eval=FALSE}
 library(car)
 library(MASS)
 library(ciTools)
@@ -732,7 +723,7 @@ for(j in 1:length(age.group)) {
 ```
 
 ### Forecasting for the NegBin (ver 2)
-```{r}
+```{r forecast_negbin_ver2, eval=FALSE}
 library(car)
 library(MASS)
 library(ciTools)
@@ -805,7 +796,7 @@ for(j in 1:length(age.group)) {
 
 ### Forecasting for the Poisson
 
-```{r}
+```{r forecast_poisson, eval=FALSE}
 library(car)
 library(MASS)
 library(ciTools)
