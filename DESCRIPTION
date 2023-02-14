@@ -1,6 +1,6 @@
 Package: TyphoidMapping
 Type: Package
-Title: What the Package Does (Title Case)
+Title: This package includes data sets and models for the paper, "Mapping the incidence rates of typhoid fever in sub-Saharan Africa." 
 Version: 0.1.0
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
@@ -9,3 +9,5 @@ Description: More about what it does (maybe more than one line)
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Imports: ggplot2, GGally 
+  
