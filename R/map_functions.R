@@ -374,6 +374,7 @@ IR_plot <- function(raster=NULL, shape=NULL, shape2=NULL,
   library(raster)
   library(ggplot2)
   library(RColorBrewer)
+  library(scico)
   if (is.null(shape)){
     shape <- readRDS("data/africa_sub_Sahara_adm0_shp.rds")
   }
@@ -382,9 +383,10 @@ IR_plot <- function(raster=NULL, shape=NULL, shape2=NULL,
   # }
   pal <- brewer.pal(level, color_ramp)
   if (rev) pal <- rev(pal)
-
   myPalette <- colorRampPalette(pal)
   # sc <- scale_colour_gradientn(colours = myPalette(10000), limits=c(1, 1e4))
+  mypal <- myPalette(1e4)
+  # mypal <- scico(30, palette = 'lajolla')
 
   rpts <- as.data.frame(raster::rasterToPoints(raster))
   colnames(rpts) <- c("lon", "lat", "ir")
@@ -402,7 +404,7 @@ IR_plot <- function(raster=NULL, shape=NULL, shape2=NULL,
     scale_fill_gradientn(trans = "log10",
                          limits = c(1, 1e4),
                          breaks = c(1, 1e1, 1e2, 1e3, 1e4),
-                         colors = myPalette(1e4),
+                         colors = mypal,
                          "Incidence rate") +
     # geom_polygon(data = shape2, aes(long, lat, group = group),
     #              fill = NA, inherit.aes = FALSE) +
