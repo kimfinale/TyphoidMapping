@@ -170,7 +170,7 @@ the reference
 #### Resampling
 
 ``` r
-ppp_0_1y <- readRDS(paste0("data/covariates/prediction/ppp_", ag[1], "_20km_af_2017_20221208.rds"))
+ppp_0_1y <- readRDS(paste0("data/prediction/ppp_", ag[1], "_20km_af_2017_20221208.rds"))
 
 ir_raster_resample <- function(pred, age, ref_raster){
   rst <- readRDS(paste0("output/ir_", pred, "_bc_adj_", age, "_20230208.rds"))
@@ -361,6 +361,12 @@ d |>
 # 3 5-14 yo 0.538
 # 4 15+ yo  0.625  
 ```
+
+### Figure 3 and onwards
+
+Figures are based on the files saved in the output folder. Therefore,
+the file names have to be adjusted by changing the date part (i.e.,
+20230208) based on the dates when the codes ran.
 
 #### Figure 3A-D
 
