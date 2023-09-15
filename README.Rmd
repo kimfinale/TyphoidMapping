@@ -1,64 +1,85 @@
 ---
 title: "Mapping the incidence rate of typhoid fever in sub-Saharan Africa"
 output: github_document
-date: "2023-02-10"
+date: "2023-09-15"
 editor_options: 
   chunk_output_type: console
 ---
 
-## Load the package
+Running the scripts below will create CSV files within the 'output' and 
+'output/Forecasting' directories. Therefore, to ensure the functions run properly, under the current working directory, a directory named 'output' and a directory 'output/Forecasting' are needed for the codes to run. 
+Also, the following R packages are necessary for executing the codes. If these packages are not yet installed on your machine, kindly proceed to install them.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, eval=FALSE, warning=FALSE, message=FALSE)
 # devtools::install()
 # library(TyphoidMapping)
 # devtools::install_github("kimfinale/TyphoidMapping")
-devtools::load_all()
+# devtools::load_all()
 ```
 
-Running the scripts below saves csv files in the output directory.
+### Load packages
+```{r, eval=FALSE}
+library(car)
+library(MASS)
+library(ciTools)
+library(AER)
+library(viridis)
+library(raster)
+library(ggplot2)
+library(dplyr)
+library(sp)
+library(plyr)
+library(data.table)
+library(ggplot2)
+library(tidyr)
+library(RColorBrewer)
 
-### Log-linear regression
+files = list.files("R/", full.names = TRUE)
+sapply(files, source)
 
-```{r log-linear}
-library(GGally)
-res <- loglinear_model()
+cov.name <- c("elevation","distance_water","improved_water",
+            "improved_sanitation","annual_rainfall",
+            "annual_mean_temp","stunting_prev",
+            "HIV_prev",
+            "travel_time_city","piped_water","piped_sanitation",
+            "surface_water",
+            "open_defecation","wasting","underweight","pop_size")
 ```
 
+###  Regression
 
-### Poisson regression
+#### Poisson regression
 
-```{r poisson}
+```{r, eval=FALSE}
 res <- poisson_model()
 ```
 
-### Negative binomial regression
+#### Negative binomial regression
 
-```{r negbin}
+```{r, eval=FALSE}
 res1 <- negbin_model_1()
 res2 <- negbin_model_2()
 ```
 
-### Prepare covariates for prediction
+### Prediction
 
-```{r covprep}
+#### Prepare covariates for prediction
+
+```{r, eval=FALSE}
 pred_loc <- get_prediction_location()
 pred_cov <- get_prediction_covariate()
 ```
 
-### Predict based on the log-linear model
+#### Predict based on the poissonl model
 
-```{r predict_loglinear}
-pred <- predict_loglinear_model()
-```
-
-### Predict based on the poissonl model
-
-```{r predict_poisson}
+```{r predict_poisson, eval=FALSE}
 pred <- predict_poisson_model()
 ```
 
-### Predict based on the NegBin 
-```{r predict_negbin}
+#### Predict based on the NegBin model
+
+```{r predict_negbin, eval=FALSE}
 pred1 <- predict_negbin_model_1()
 pred2 <- predict_negbin_model_2()
 ```
@@ -68,7 +89,7 @@ pred2 <- predict_negbin_model_2()
 
 #### Figure 1
 Plot incidence rate from surveillance studies
-```{r}
+```{r, eval=FALSE}
 plt <- figure_1()
 plt
 # ggsave(plot=plt, file="plots/plot_incidence_rates.png", width=11, height=8,
@@ -76,10 +97,9 @@ plt
 
 ```
 
-
 For Figure 2 and onwards, following computations are required.
-### Preliminaries
-```{r}
+#### Preliminaries
+```{r, eval=FALSE}
 # Reference shapefiles
 afss <- readRDS("data/africa_sub_Sahara_adm0_shp.rds")
 afssadm1 <- readRDS("data/africa_sub_Sahara_adm1_shp.rds")
@@ -89,7 +109,8 @@ afssadm1 <- readRDS("data/africa_sub_Sahara_adm1_shp.rds")
 # source("R/ggplot2_theme.R")
 # source("R/util.R")
 # source("R/map_functions.R")
-library(raster)
+# # library(raster)
+# library(terra)
 # variable names for estimates
 estim_type <- c("pred", "lower", "upper") # mean, lower bounds, and upper bounds
 ag <- c("0_1y", "2_4y", "5_14y", "over14y") # age group
@@ -97,9 +118,10 @@ countries <- unique(afssadm1$NAME_0)
 ```
 
 ### Incidence rate (IR) accounting for blood culture sensitivity and maximum rate
-Some studies reported incidence rates that do not account for blood culture sensitivity while others reported incidence rates that do. In addition, studies that reported incidence rates accounting for blood culture sensitivity used different sensitivity values. We therefore modeled incidence rates that do not account for BC sensitivity for consistency and later took it into consideration by multiplying the estimates with uniformly 1/0.6  
 
-```{r bc_sensitivity, eval=FALSE}
+Some studies reported incidence rates that do not account for blood culture sensitivity while others reported incidence rates that do. In addition, studies that reported incidence rates accounting for blood culture sensitivity used different sensitivity values. We therefore modeled incidence rates that do not account for BC sensitivity for consistency and later took it into consideration by multiplying the estimates with uniformly 1/0.6
+
+```{r, eval=FALSE}
 ## function to account for blood culture sensitivity
 adjust_blood_culture_sensitivity <- function(raster, BCS=0.6, max_IR=1e4){
   raster[] <- raster[] / BCS
@@ -138,7 +160,7 @@ Use the incidence rate by age (original incidence rate estimates) and population
 Two rasters (ppp and ir_*) have the same resolutions and were not aligned perfectly and therefore, resample is done as ppp for 0-1 yo as the reference
 
 #### Resampling
-```{r resample, eval=FALSE}
+```{r eval=FALSE}
 ppp_0_1y <- readRDS(paste0("data/covariates/prediction/ppp_", ag[1], "_20km_af_2017_20221208.rds"))
 
 ir_raster_resample <- function(pred, age, ref_raster){
@@ -157,7 +179,7 @@ for(pd in estim_type){
 ```
 
 #### Accounting for population size
-```{r ir, eval=FALSE}
+```{r eval=FALSE}
 regions <- c("country", "subnational", "subregion")
 # region <- regions[2] # as an example
 tm <- "20230208"
@@ -166,7 +188,7 @@ for(region in regions){
     irdata <- list()
     for (i in 1:4) {
       cat("i =", i, ", j =", j, "\n")
-      ppp <- readRDS(paste0("data/covariates/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
+      ppp <- readRDS(paste0("data/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
       ir <- readRDS(paste0("output/ir_resampled_", estim_type[j], "_bc_adj_", ag[i], "_", tm, ".rds"))
       res <- IR_by_region(ppp=ppp, ir=ir, region=region, shape=afssadm1)
       
@@ -178,12 +200,12 @@ for(region in regions){
 }
 ```
 
-## IR for all ages
+### IR for all ages
 Use the incidence rate by age (original incidence rate estimates) and population size by age ltiplied by proportion by age by country) on 20 km by 20 km grids. Simply multiply the two to get the number of cases on grids and sum across the region to get the region-specific number of cases. Divide that with the region-specific population size that is achieved by summing ppp across the region. 
 
-```{r ir_all, eval=FALSE}
+```{r, eval=FALSE}
 # overall population size
-pppall <- readRDS("data/covariates/prediction/ppp_20km_af_2017_20221208.rds")
+pppall <- readRDS("data/prediction/ppp_20km_af_2017_20221208.rds")
 # case = ir *  ppp
 # raster template - values will change
 rst <- readRDS(paste0("output/ir_resampled_", estim_type[1], "_bc_adj_", ag[1], "_20230208.rds"))
@@ -192,7 +214,7 @@ for (j in 1:length(estim_type)) {
   # sum the number of cases (IR * pop) across age group
   for (i in 1:length(ag)) {
     ir <- readRDS(paste0("output/ir_resampled_", estim_type[j], "_bc_adj_", ag[i], "_20230208.rds"))
-    ppp <- readRDS(paste0("data/covariates/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
+    ppp <- readRDS(paste0("data/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
     rst[] <- rst[] + (ir[] * ppp[])
   }
   # divide with the overall population size
@@ -228,7 +250,7 @@ tm <- "20230208"
 for(j in 1:3) {
   for(i in 1:4) {
     cat("i =", i, ", j =", j, "\n")
-    ppp <- readRDS(paste0("data/covariates/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
+    ppp <- readRDS(paste0("data/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
     ir <- readRDS(paste0("output/ir_resampled_", estim_type[j], "_bc_adj_", ag[i], "_", tm, ".rds"))
   # output raster
   caserst <- ir
@@ -279,7 +301,7 @@ for (k in 1:length(regions)){
 
 Plot of predicted versus observed based on the leave-one-out cross-validation
 
-```{r}
+```{r, eval=FALSE}
 plt <- figure_2()
 plt
 # fac <- 2
@@ -288,7 +310,18 @@ plt
 ```
 
 Calculate the proportion of observations that are within the 95% confidence interval of the predicted value.
-```{r}
+```{r, eval=FALSE}
+dlist <- list()
+dlist[[1]] <- fread("data/Prediction_Age_0-1 y_PoiReg.csv")
+dlist[[2]] <- fread("data/Prediction_Age_2-4 y_NBReg.csv")
+dlist[[3]] <- fread("data/Prediction_Age_5-14 y_NBReg.csv")
+dlist[[4]] <- fread("data/Prediction_Age_over 14y_NBReg.csv")
+ages <- c("0-1 yo", "2-4 yo", "5-14 yo", "15+ yo")
+for (i in 1:4) {
+  dlist[[i]]$age <- ages[i]
+}
+d <- do.call("rbind", dlist)
+d$age <- factor(d$age, levels = c("0-1 yo", "2-4 yo", "5-14 yo", "15+ yo"))
 
 for(i in 1:nrow(d)) {
   if(d$lower[i] <= d$y[i] & d$upper[i] >= d$y[i]) {
@@ -299,8 +332,8 @@ for(i in 1:nrow(d)) {
 }
 
 d |>
-  group_by(age) |>
-  summarise(prop = sum(included) / n())
+  dplyr::group_by(age) |>
+  dplyr::summarise(prop = sum(included) / n())
 #   age      prop
 #   <fct>   <dbl>
 # 1 0-1 yo  0.136
@@ -312,12 +345,13 @@ d |>
 
 
 #### Figure 3A-D 
-```{r fig3, eval=FALSE}
+```{r, eval=FALSE}
 for(i in 1:length(ag)){
   r <- readRDS(paste0("output/ir_pred_subnational_", ag[i], "_20230208.rds"))
   # p <- IR_plot(raster=r, color_ramp="RdYlBu", rev=FALSE)
   p <- IR_plot(raster=r) 
-  ggsave(paste0("plots/ir_subnational_pred_", ag[i], "_", tstamp(),".png"), p, width=7.4, height=7.4*map_ratio(r), units="in")
+  # ggsave(paste0("plots/ir_subnational_pred_", ag[i], "_", tstamp(),".png"), 
+  #        p, width=7.4, height=7.4*map_ratio(r), units="in")
 }
 ```
 
@@ -325,13 +359,14 @@ for(i in 1:length(ag)){
 ```{r, eval=FALSE}
 r <- readRDS("output/ir_allage_country_pred_20230208.rds")
 p <- IR_plot(raster=r)
-ggsave(paste0("plots/ir_allage_country_pred_", tstamp(),".png"), p, width=7.4, height=7.4*map_ratio(r), units="in")
+ggsave(paste0("plots/ir_allage_country_pred_", tstamp(),".png"), p,
+       width=7.4, height=7.4*map_ratio(r), units="in")
 ```
 
 #### Figure 4B
 
-```{r}
-library(data.table)
+```{r, eval=FALSE}
+
 ir_allage <- readRDS("output/ir_allage_pred_20230208.rds") # 20 km by 20 km 
 ir_allage_cntry <- readRDS("output/ir_allage_country_pred_20230208.rds")
 shape <- readRDS("data/africa_sub_Sahara_adm0_shp.rds")
@@ -344,19 +379,16 @@ ccmsc$country <- areas
 for (i in seq_along(areas)) {
   poly <- shape[shape$NAME_0 %in% areas[i], ] # SpatialPolygon  
   irgrid <- raster::extract(ir_allage, poly, df = TRUE, cellnumbers = TRUE)
-  irgrid_cntry <- raster::extract(ir_allage_cntry, poly, df = TRUE, cellnumbers = TRUE)
+  irgrid_cntry <- raster::extract(ir_allage_cntry, poly, df = TRUE,
+                                  cellnumbers = TRUE)
   ccmsc$cellcount[i] <- length(irgrid$cell)
   ccmsc$mean[i] <- mean(irgrid$ir_allage_pred, na.rm=T) 
   ccmsc$sd[i] <- sd(irgrid$ir_allage_pred, na.rm=T)
   ccmsc$cv[i] <- ccmsc$sd[i] / ccmsc$mean[i]
   ccmsc$country_mean[i] <- mean(irgrid_cntry$value, na.rm=T)
 }
-```
 
-```{r}
-library(dplyr)
-library(RColorBrewer)
-library(ggplot2)
+
 meansdcv <- ccmsc
 summary(meansdcv$cv)
 summary(meansdcv$country_mean)
@@ -385,17 +417,19 @@ p <- ggplot(meansdcv, aes(x=cv, y=country_mean, color=country_mean, label=countr
   theme_bw() +
   theme(legend.position = c(0.9,.85))
 
-p  
+# p  
 m <- 0.9
 ggsave(paste0("plots/ir_allage_country_coeffvar_",
                 tstamp(),".png"), p, width=7.4*m, height=7.4*m, units="in")
 ```
 
 
-## Summary tables
-### Country-level incidence rates (mean with 95% confidence intervals)
+### Summary tables
+
+Country-level incidence rates (mean with 95% confidence intervals)
+
 #### Table S3
-```{r}
+```{r, eval=FALSE}
 format_mean_95CI <- function(mean_lb_ub, digits) {
   pred <- format(round(mean_lb_ub[[1]], digits=digits), big.mark=",", trim=TRUE)
   lb <- format(round(mean_lb_ub[[2]], digits=digits), big.mark=",", trim=TRUE)
@@ -404,9 +438,9 @@ format_mean_95CI <- function(mean_lb_ub, digits) {
   paste0(pred, " (", lb , " - ", ub, ")")
 }
 
-pred <- readRDS("outputs/summary_ir_allage_country_pred_20230208.rds")
-lower <- readRDS("outputs/summary_ir_allage_country_lower_20230208.rds")
-upper <- readRDS("outputs/summary_ir_allage_country_upper_20230208.rds")
+pred <- readRDS("output/summary_ir_allage_country_pred_20230208.rds")
+lower <- readRDS("output/summary_ir_allage_country_lower_20230208.rds")
+upper <- readRDS("output/summary_ir_allage_country_upper_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred$data$IR
@@ -414,11 +448,11 @@ estimates[[2]] <- lower$data$IR
 estimates[[3]] <- upper$data$IR
 
 tab <- data.frame(Country=pred$data$Area, Overall=NA)
-tab$Overall <- mean_with_95CI(estimates, digits = 1)
+tab$Overall <- format_mean_95CI(estimates, digits = 1)
 
-pred <- readRDS("outputs/summary_ir_pred_country_20230208.rds")
-lower <- readRDS("outputs/summary_ir_lower_country_20230208.rds")
-upper <- readRDS("outputs/summary_ir_upper_country_20230208.rds")
+pred <- readRDS("output/summary_ir_pred_country_20230208.rds")
+lower <- readRDS("output/summary_ir_lower_country_20230208.rds")
+upper <- readRDS("output/summary_ir_upper_country_20230208.rds")
 
 ir_by_age_meanci <- vector("list", length=4) # 4 age groups 
 for (i in 1:4) {
@@ -434,14 +468,14 @@ ir_by_age <- do.call("cbind", ir_by_age_meanci)
 tab_all <- cbind(tab, ir_by_age)
 names(tab_all) <- c("Country", "Overall", "0-1 yo", "2-4 yo", "5-14 yo", "over 14 yo")
 tab_all$Country <- country_abbr(tab_all$Country)
-fwrite(tab, paste0("outputs/IR_by_age_overall_country_tab_", tstamp(), ".csv"))
+fwrite(tab, paste0("output/IR_by_age_overall_country_tab_", tstamp(), ".csv"))
 ```
 
 #### Table S4
-```{r}
-pred <- readRDS("outputs/summary_ir_allage_subregion_pred_20230208.rds")
-lower <- readRDS("outputs/summary_ir_allage_subregion_lower_20230208.rds")
-upper <- readRDS("outputs/summary_ir_allage_subregion_upper_20230208.rds")
+```{r, eval=FALSE}
+pred <- readRDS("output/summary_ir_allage_subregion_pred_20230208.rds")
+lower <- readRDS("output/summary_ir_allage_subregion_lower_20230208.rds")
+upper <- readRDS("output/summary_ir_allage_subregion_upper_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred$data$IR
@@ -449,17 +483,17 @@ estimates[[2]] <- lower$data$IR
 estimates[[3]] <- upper$data$IR
 
 tab <- data.frame(Subregion=pred$data$Area, IR=NA)
-tab$IR <- mean_with_95CI(estimates, digits = 1)
-fwrite(tab_all, paste0("outputs/IR_allage_subregion_tab_", tstamp(), ".csv"))
+tab$IR <- format_mean_95CI(estimates, digits = 1)
+fwrite(tab_all, paste0("output/IR_allage_subregion_tab_", tstamp(), ".csv"))
 ```
 
 
 #### Table S5
 Expected number of cases by country
-```{r}
-pred <- readRDS("outputs/summary_case_pred_country_20230208.rds")
-lower <- readRDS("outputs/summary_case_lower_country_20230208.rds")
-upper <- readRDS("outputs/summary_case_upper_country_20230208.rds")
+```{r, eval=FALSE}
+pred <- readRDS("output/summary_case_pred_country_20230208.rds")
+lower <- readRDS("output/summary_case_lower_country_20230208.rds")
+upper <- readRDS("output/summary_case_upper_country_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred
@@ -477,15 +511,15 @@ for(i in 1:5) {
   tab[, i+1] <- format_mean_95CI(list(pred[[i]]$data$Case, lower[[i]]$data$Case, upper[[i]]$data$Case), digits=0)
 }
 
-data.table::fwrite(tab, paste0("outputs/case_country_tab_", tstamp(), ".csv"))
+data.table::fwrite(tab, paste0("output/case_country_tab_", tstamp(), ".csv"))
 ```
 
 #### Table S6
 Expected number of cases by Africa sub-region
-```{r}
-pred <- readRDS("outputs/summary_case_pred_subregion_20230208.rds")
-lower <- readRDS("outputs/summary_case_lower_subregion_20230208.rds")
-upper <- readRDS("outputs/summary_case_upper_subregion_20230208.rds")
+```{r, eval=FALSE}
+pred <- readRDS("output/summary_case_pred_subregion_20230208.rds")
+lower <- readRDS("output/summary_case_lower_subregion_20230208.rds")
+upper <- readRDS("output/summary_case_upper_subregion_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred
@@ -503,8 +537,20 @@ for(i in 1:5) {
   tab[, i+1] <- format_mean_95CI(list(pred[[i]]$data$Case, lower[[i]]$data$Case, upper[[i]]$data$Case), digits=0)
 }
 
-data.table::fwrite(tab, paste0("outputs/case_subregion_tab_", tstamp(), ".csv"))
+data.table::fwrite(tab, paste0("output/case_subregion_tab_", tstamp(), ".csv"))
 ```
 
+### Supplementary figures
 
+#### Figure S18
+Expected incidence rate at the country level
+```{r figS18, eval=FALSE}
+
+for(i in 1:length(ag)){
+  r <- readRDS(paste0("output/ir_pred_country_", ag[i], "_20230208.rds"))
+  # p <- IR_plot(raster=r, color_ramp="RdYlBu", rev=FALSE)
+  p <- IR_plot(raster=r) 
+  ggsave(paste0("plots/ir_pred_", ag[i], "_", tstamp(),".png"), p, width=7.4, height=7.4*map_ratio(r), units="in")
+}
+```
 
