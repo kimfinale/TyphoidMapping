@@ -1,16 +1,10 @@
 get_prediction_location <- function(){
 
-  library(viridis)
-  library(raster)
-  library(ggplot2)
-  library(dplyr)
-  library(sp)
 
   ###############################################
   # 1. Check the locations for prediction
   # weather covariates' locations are not equal to other covariates.
   ###############################################
-  cov.name<-c("elevation","distance_water","improved_water","improved_sanitation","annual_rainfall","annual_mean_temp","stunting_prev","HIV_prev","travel_time_city","piped_water","piped_sanitation","surface_water","open_defecation","wasting","underweight","pop_size")
 
   temp<-NULL
   N.case<-rep(NA,length(cov.name))

@@ -29,8 +29,11 @@ predict_negbin_model_1 <- function() {
   #############################################################
   # 1-1. Forecasting & Convert forecasting values into raster file
   #############################################################
-  cov.name<-c("improved_water","improved_sanitation","annual_rainfall","annual_mean_temp","stunting_prev","HIV_prev","travel_time_city","elevation","distance_water","piped_water","piped_sanitation","surface_water","open_defecation","wasting","underweight","pop_size")
-
+  # cov.name<-c("improved_water","improved_sanitation","annual_rainfall",
+  #             "annual_mean_temp","stunting_prev","HIV_prev",
+  #             "travel_time_city","elevation","distance_water",
+  #             "piped_water","piped_sanitation","surface_water",
+  #             "open_defecation","wasting","underweight","pop_size")
 
   for(j in 1:length(age.group)) {
     age<-age.group[j]

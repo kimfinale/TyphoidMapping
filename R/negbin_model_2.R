@@ -1,12 +1,4 @@
 negbin_model_2 <- function(){
-
-  library(car)
-  library(MASS)
-  library(ciTools)
-  library(AER)
-
-  #setwd("D:/SynologyDrive/Research/Collaboration/IVI_Kim/codes/")
-
   dat<-read.csv("data/Outcome_Covariates_sites_catchment areas_v6.csv")
   dat$annual_rainfall<-log(dat$annual_rainfall)
   dat$pop_size<-log(dat$pop_size)

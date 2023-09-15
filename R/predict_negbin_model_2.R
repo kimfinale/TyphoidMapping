@@ -1,13 +1,4 @@
 predict_negbin_model_2 <- function(){
-
-  library(car)
-  library(MASS)
-  library(ciTools)
-  library(raster)
-  library(plyr)
-
-  #setwd("D:/SynologyDrive/Research/Collaboration/IVI_Kim/codes/")
-
   # Load modeling dataset
   dat<-read.csv("data/Outcome_Covariates_sites_catchment areas_v6.csv")
   dat$annual_rainfall<-log(dat$annual_rainfall)
@@ -29,7 +20,11 @@ predict_negbin_model_2 <- function(){
   #############################################################
   # 1-1. Forecasting & Convert forecasting values into raster file
   #############################################################
-  cov.name<-c("improved_water","improved_sanitation","annual_rainfall","annual_mean_temp","stunting_prev","HIV_prev","travel_time_city","elevation","distance_water","piped_water","piped_sanitation","surface_water","open_defecation","wasting","underweight","pop_size")
+  # cov.name<-c("improved_water","improved_sanitation","annual_rainfall",
+  #             "annual_mean_temp","stunting_prev","HIV_prev","travel_time_city",
+  #             "elevation","distance_water","piped_water","piped_sanitation",
+  #             "surface_water","open_defecation","wasting",
+  #             "underweight","pop_size")
 
   for(j in 1:length(age.group)) {
     age<-age.group[j]

@@ -1,10 +1,22 @@
 Mapping the incidence rate of typhoid fever in sub-Saharan Africa
 ================
-2023-02-10
+2023-09-15
 
-## Load the package
+Running the scripts below will create CSV files within the ‘output’
+directory. Therefore, to ensure the code functions properly, a directory
+named ‘output’ is needed under the current directory. Also, the
+following R packages are necessary for executing the codes: `ciTools`,
+`AER`, `raster`, and `scico`. If these packages are not yet installed on
+your machine, kindly proceed to install them.
 
-Running the scripts below saves csv files in the output directory.
+### Load packages
+
+``` r
+library(scico)
+library(terra)
+library(ciTools)
+library(AER)
+```
 
 ### Log-linear regression
 
@@ -78,7 +90,8 @@ afssadm1 <- readRDS("data/africa_sub_Sahara_adm1_shp.rds")
 # source("R/ggplot2_theme.R")
 # source("R/util.R")
 # source("R/map_functions.R")
-library(raster)
+# # library(raster)
+# library(terra)
 # variable names for estimates
 estim_type <- c("pred", "lower", "upper") # mean, lower bounds, and upper bounds
 ag <- c("0_1y", "2_4y", "5_14y", "over14y") # age group
@@ -526,3 +539,20 @@ for(i in 1:5) {
 
 data.table::fwrite(tab, paste0("outputs/case_subregion_tab_", tstamp(), ".csv"))
 ```
+
+### Supplementary figures
+
+#### Figure S18
+
+Expected incidence rate at the country level
+
+``` r
+for(i in 1:length(ag)){
+  r <- readRDS(paste0("output/ir_pred_country_", ag[i], "_20230208.rds"))
+  # p <- IR_plot(raster=r, color_ramp="RdYlBu", rev=FALSE)
+  p <- IR_plot(raster=r) 
+  ggsave(paste0("plots/ir_pred_", ag[i], "_", tstamp(),".png"), p, width=7.4, height=7.4*map_ratio(r), units="in")
+}
+```
+
+\`\`\`

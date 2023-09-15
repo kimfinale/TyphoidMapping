@@ -2,7 +2,6 @@ get_prediction_covariate <- function(){
   ##############################################
   # 2. Make the covariates for prediction
   ##############################################
-  cov.name<-c("elevation","distance_water","improved_water","improved_sanitation","annual_rainfall","annual_mean_temp","stunting_prev","HIV_prev","travel_time_city","piped_water","piped_sanitation","surface_water","open_defecation","wasting","underweight","pop_size")
 
   loc.pred<-read.csv("output/locations_for_prediction_v6.csv")
   new.dat<-matrix(NA,nrow=nrow(loc.pred),ncol=(2+length(cov.name)))    # 62782
@@ -10,6 +9,7 @@ get_prediction_covariate <- function(){
   colnames(new.dat)<-c("lon", "lat",cov.name)
 
   for (i in 1:length(cov.name)) {
+    # cat("i =", i, "\n")
     covname2<-cov.name[i]
     if(i<=2) {title.name<-sprintf("%s_20km_africa",covname2)  }
     if(i>2 && i<16) {title.name<-sprintf("%s_20km_af_2017_20220802",covname2)  }

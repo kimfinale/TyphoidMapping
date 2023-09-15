@@ -1,10 +1,4 @@
 figure_1 <- function(){
-  library(data.table)
-  library(ggplot2)
-  library(tidyr)
-  library(dplyr)
-  library(RColorBrewer)
-
   dat <- fread("data/af_tf_incidence_v10_edit_cov_20221114.csv")
   dat <- dat[REGION == "Africa"]
   dat <- dat[COUNTRY != "Egypt"]
@@ -19,7 +13,8 @@ figure_1 <- function(){
   dat[, IR_UPPER_plotting := IR_UPPER * BLOOD_CULTURE_SENSITIVITY]
   dat[, AGE_GRP := age_grp_new] # age_grp_new has some simplifications for AGE_GRP (eg, 5-15 yo -> 5-14 yo)
 
-  dat <- dat[, c("SITE","COUNTRY","LOCATION","AGE_GRP","YEAR","IR_plotting","IR_LOWER_plotting","IR_UPPER_plotting")]
+  dat <- dat[, c("SITE","COUNTRY","LOCATION","AGE_GRP",
+                 "YEAR","IR_plotting","IR_LOWER_plotting","IR_UPPER_plotting")]
 
   dat$AGE_GRP <-
     factor(dat$AGE_GRP,

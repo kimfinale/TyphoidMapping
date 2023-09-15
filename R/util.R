@@ -128,3 +128,11 @@ country_abbr <- function(x){
 
   return(x)
 }
+
+format_mean_95CI <- function(mean_lb_ub, digits) {
+  pred <- format(round(mean_lb_ub[[1]], digits=digits), big.mark=",", trim=TRUE)
+  lb <- format(round(mean_lb_ub[[2]], digits=digits), big.mark=",", trim=TRUE)
+  ub <- format(round(mean_lb_ub[[3]], digits=digits), big.mark=",", trim=TRUE)
+
+  paste0(pred, " (", lb , " - ", ub, ")")
+}
