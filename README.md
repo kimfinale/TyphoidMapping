@@ -2,62 +2,75 @@ Mapping the incidence rate of typhoid fever in sub-Saharan Africa
 ================
 2023-09-15
 
-Running the scripts below will create CSV files within the ‘output’
-directory. Therefore, to ensure the code functions properly, a directory
-named ‘output’ is needed under the current directory. Also, the
-following R packages are necessary for executing the codes: `ciTools`,
-`AER`, `raster`, and `scico`. If these packages are not yet installed on
-your machine, kindly proceed to install them.
+Running the scripts below will create CSV files within the ‘output’ and
+‘output/Forecasting’ directories. Therefore, to ensure the functions run
+properly, under the current working directory, a directory named
+‘output’ and a directory ‘output/Forecasting’ are needed for the codes
+to run. Also, the following R packages are necessary for executing the
+codes. If these packages are not yet installed on your machine, kindly
+proceed to install them.
 
 ### Load packages
 
 ``` r
-library(scico)
-library(terra)
+library(car)
+library(MASS)
 library(ciTools)
 library(AER)
+library(viridis)
+library(raster)
+library(ggplot2)
+library(dplyr)
+library(sp)
+library(plyr)
+library(data.table)
+library(ggplot2)
+library(tidyr)
+library(RColorBrewer)
+
+files = list.files("R/", full.names = TRUE)
+sapply(files, source)
+
+cov.name <- c("elevation","distance_water","improved_water",
+            "improved_sanitation","annual_rainfall",
+            "annual_mean_temp","stunting_prev",
+            "HIV_prev",
+            "travel_time_city","piped_water","piped_sanitation",
+            "surface_water",
+            "open_defecation","wasting","underweight","pop_size")
 ```
 
-### Log-linear regression
+### Regression
 
-``` r
-library(GGally)
-res <- loglinear_model()
-```
-
-### Poisson regression
+#### Poisson regression
 
 ``` r
 res <- poisson_model()
 ```
 
-### Negative binomial regression
+#### Negative binomial regression
 
 ``` r
 res1 <- negbin_model_1()
 res2 <- negbin_model_2()
 ```
 
-### Prepare covariates for prediction
+### Prediction
+
+#### Prepare covariates for prediction
 
 ``` r
 pred_loc <- get_prediction_location()
 pred_cov <- get_prediction_covariate()
 ```
 
-### Predict based on the log-linear model
-
-``` r
-pred <- predict_loglinear_model()
-```
-
-### Predict based on the poissonl model
+#### Predict based on the poissonl model
 
 ``` r
 pred <- predict_poisson_model()
 ```
 
-### Predict based on the NegBin
+#### Predict based on the NegBin model
 
 ``` r
 pred1 <- predict_negbin_model_1()
@@ -77,7 +90,7 @@ plt
 #        units="in")
 ```
 
-For Figure 2 and onwards, following computations are required. \###
+For Figure 2 and onwards, following computations are required. \####
 Preliminaries
 
 ``` r
@@ -185,7 +198,7 @@ for(region in regions){
     irdata <- list()
     for (i in 1:4) {
       cat("i =", i, ", j =", j, "\n")
-      ppp <- readRDS(paste0("data/covariates/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
+      ppp <- readRDS(paste0("data/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
       ir <- readRDS(paste0("output/ir_resampled_", estim_type[j], "_bc_adj_", ag[i], "_", tm, ".rds"))
       res <- IR_by_region(ppp=ppp, ir=ir, region=region, shape=afssadm1)
       
@@ -197,7 +210,7 @@ for(region in regions){
 }
 ```
 
-## IR for all ages
+### IR for all ages
 
 Use the incidence rate by age (original incidence rate estimates) and
 population size by age ltiplied by proportion by age by country) on 20
@@ -208,7 +221,7 @@ achieved by summing ppp across the region.
 
 ``` r
 # overall population size
-pppall <- readRDS("data/covariates/prediction/ppp_20km_af_2017_20221208.rds")
+pppall <- readRDS("data/prediction/ppp_20km_af_2017_20221208.rds")
 # case = ir *  ppp
 # raster template - values will change
 rst <- readRDS(paste0("output/ir_resampled_", estim_type[1], "_bc_adj_", ag[1], "_20230208.rds"))
@@ -217,7 +230,7 @@ for (j in 1:length(estim_type)) {
   # sum the number of cases (IR * pop) across age group
   for (i in 1:length(ag)) {
     ir <- readRDS(paste0("output/ir_resampled_", estim_type[j], "_bc_adj_", ag[i], "_20230208.rds"))
-    ppp <- readRDS(paste0("data/covariates/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
+    ppp <- readRDS(paste0("data/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
     rst[] <- rst[] + (ir[] * ppp[])
   }
   # divide with the overall population size
@@ -256,7 +269,7 @@ tm <- "20230208"
 for(j in 1:3) {
   for(i in 1:4) {
     cat("i =", i, ", j =", j, "\n")
-    ppp <- readRDS(paste0("data/covariates/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
+    ppp <- readRDS(paste0("data/prediction/ppp_", ag[i], "_20km_af_2017_20221208.rds"))
     ir <- readRDS(paste0("output/ir_resampled_", estim_type[j], "_bc_adj_", ag[i], "_", tm, ".rds"))
   # output raster
   caserst <- ir
@@ -318,6 +331,18 @@ Calculate the proportion of observations that are within the 95%
 confidence interval of the predicted value.
 
 ``` r
+dlist <- list()
+dlist[[1]] <- fread("data/Prediction_Age_0-1 y_PoiReg.csv")
+dlist[[2]] <- fread("data/Prediction_Age_2-4 y_NBReg.csv")
+dlist[[3]] <- fread("data/Prediction_Age_5-14 y_NBReg.csv")
+dlist[[4]] <- fread("data/Prediction_Age_over 14y_NBReg.csv")
+ages <- c("0-1 yo", "2-4 yo", "5-14 yo", "15+ yo")
+for (i in 1:4) {
+  dlist[[i]]$age <- ages[i]
+}
+d <- do.call("rbind", dlist)
+d$age <- factor(d$age, levels = c("0-1 yo", "2-4 yo", "5-14 yo", "15+ yo"))
+
 for(i in 1:nrow(d)) {
   if(d$lower[i] <= d$y[i] & d$upper[i] >= d$y[i]) {
     d$included[i] <- 1
@@ -327,8 +352,8 @@ for(i in 1:nrow(d)) {
 }
 
 d |>
-  group_by(age) |>
-  summarise(prop = sum(included) / n())
+  dplyr::group_by(age) |>
+  dplyr::summarise(prop = sum(included) / n())
 #   age      prop
 #   <fct>   <dbl>
 # 1 0-1 yo  0.136
@@ -344,7 +369,8 @@ for(i in 1:length(ag)){
   r <- readRDS(paste0("output/ir_pred_subnational_", ag[i], "_20230208.rds"))
   # p <- IR_plot(raster=r, color_ramp="RdYlBu", rev=FALSE)
   p <- IR_plot(raster=r) 
-  ggsave(paste0("plots/ir_subnational_pred_", ag[i], "_", tstamp(),".png"), p, width=7.4, height=7.4*map_ratio(r), units="in")
+  # ggsave(paste0("plots/ir_subnational_pred_", ag[i], "_", tstamp(),".png"), 
+  #        p, width=7.4, height=7.4*map_ratio(r), units="in")
 }
 ```
 
@@ -353,13 +379,13 @@ for(i in 1:length(ag)){
 ``` r
 r <- readRDS("output/ir_allage_country_pred_20230208.rds")
 p <- IR_plot(raster=r)
-ggsave(paste0("plots/ir_allage_country_pred_", tstamp(),".png"), p, width=7.4, height=7.4*map_ratio(r), units="in")
+ggsave(paste0("plots/ir_allage_country_pred_", tstamp(),".png"), p,
+       width=7.4, height=7.4*map_ratio(r), units="in")
 ```
 
 #### Figure 4B
 
 ``` r
-library(data.table)
 ir_allage <- readRDS("output/ir_allage_pred_20230208.rds") # 20 km by 20 km 
 ir_allage_cntry <- readRDS("output/ir_allage_country_pred_20230208.rds")
 shape <- readRDS("data/africa_sub_Sahara_adm0_shp.rds")
@@ -372,19 +398,16 @@ ccmsc$country <- areas
 for (i in seq_along(areas)) {
   poly <- shape[shape$NAME_0 %in% areas[i], ] # SpatialPolygon  
   irgrid <- raster::extract(ir_allage, poly, df = TRUE, cellnumbers = TRUE)
-  irgrid_cntry <- raster::extract(ir_allage_cntry, poly, df = TRUE, cellnumbers = TRUE)
+  irgrid_cntry <- raster::extract(ir_allage_cntry, poly, df = TRUE,
+                                  cellnumbers = TRUE)
   ccmsc$cellcount[i] <- length(irgrid$cell)
   ccmsc$mean[i] <- mean(irgrid$ir_allage_pred, na.rm=T) 
   ccmsc$sd[i] <- sd(irgrid$ir_allage_pred, na.rm=T)
   ccmsc$cv[i] <- ccmsc$sd[i] / ccmsc$mean[i]
   ccmsc$country_mean[i] <- mean(irgrid_cntry$value, na.rm=T)
 }
-```
 
-``` r
-library(dplyr)
-library(RColorBrewer)
-library(ggplot2)
+
 meansdcv <- ccmsc
 summary(meansdcv$cv)
 summary(meansdcv$country_mean)
@@ -413,15 +436,15 @@ p <- ggplot(meansdcv, aes(x=cv, y=country_mean, color=country_mean, label=countr
   theme_bw() +
   theme(legend.position = c(0.9,.85))
 
-p  
+# p  
 m <- 0.9
 ggsave(paste0("plots/ir_allage_country_coeffvar_",
                 tstamp(),".png"), p, width=7.4*m, height=7.4*m, units="in")
 ```
 
-## Summary tables
+### Summary tables
 
-### Country-level incidence rates (mean with 95% confidence intervals)
+Country-level incidence rates (mean with 95% confidence intervals)
 
 #### Table S3
 
@@ -434,9 +457,9 @@ format_mean_95CI <- function(mean_lb_ub, digits) {
   paste0(pred, " (", lb , " - ", ub, ")")
 }
 
-pred <- readRDS("outputs/summary_ir_allage_country_pred_20230208.rds")
-lower <- readRDS("outputs/summary_ir_allage_country_lower_20230208.rds")
-upper <- readRDS("outputs/summary_ir_allage_country_upper_20230208.rds")
+pred <- readRDS("output/summary_ir_allage_country_pred_20230208.rds")
+lower <- readRDS("output/summary_ir_allage_country_lower_20230208.rds")
+upper <- readRDS("output/summary_ir_allage_country_upper_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred$data$IR
@@ -444,11 +467,11 @@ estimates[[2]] <- lower$data$IR
 estimates[[3]] <- upper$data$IR
 
 tab <- data.frame(Country=pred$data$Area, Overall=NA)
-tab$Overall <- mean_with_95CI(estimates, digits = 1)
+tab$Overall <- format_mean_95CI(estimates, digits = 1)
 
-pred <- readRDS("outputs/summary_ir_pred_country_20230208.rds")
-lower <- readRDS("outputs/summary_ir_lower_country_20230208.rds")
-upper <- readRDS("outputs/summary_ir_upper_country_20230208.rds")
+pred <- readRDS("output/summary_ir_pred_country_20230208.rds")
+lower <- readRDS("output/summary_ir_lower_country_20230208.rds")
+upper <- readRDS("output/summary_ir_upper_country_20230208.rds")
 
 ir_by_age_meanci <- vector("list", length=4) # 4 age groups 
 for (i in 1:4) {
@@ -464,15 +487,15 @@ ir_by_age <- do.call("cbind", ir_by_age_meanci)
 tab_all <- cbind(tab, ir_by_age)
 names(tab_all) <- c("Country", "Overall", "0-1 yo", "2-4 yo", "5-14 yo", "over 14 yo")
 tab_all$Country <- country_abbr(tab_all$Country)
-fwrite(tab, paste0("outputs/IR_by_age_overall_country_tab_", tstamp(), ".csv"))
+fwrite(tab, paste0("output/IR_by_age_overall_country_tab_", tstamp(), ".csv"))
 ```
 
 #### Table S4
 
 ``` r
-pred <- readRDS("outputs/summary_ir_allage_subregion_pred_20230208.rds")
-lower <- readRDS("outputs/summary_ir_allage_subregion_lower_20230208.rds")
-upper <- readRDS("outputs/summary_ir_allage_subregion_upper_20230208.rds")
+pred <- readRDS("output/summary_ir_allage_subregion_pred_20230208.rds")
+lower <- readRDS("output/summary_ir_allage_subregion_lower_20230208.rds")
+upper <- readRDS("output/summary_ir_allage_subregion_upper_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred$data$IR
@@ -480,8 +503,8 @@ estimates[[2]] <- lower$data$IR
 estimates[[3]] <- upper$data$IR
 
 tab <- data.frame(Subregion=pred$data$Area, IR=NA)
-tab$IR <- mean_with_95CI(estimates, digits = 1)
-fwrite(tab_all, paste0("outputs/IR_allage_subregion_tab_", tstamp(), ".csv"))
+tab$IR <- format_mean_95CI(estimates, digits = 1)
+fwrite(tab_all, paste0("output/IR_allage_subregion_tab_", tstamp(), ".csv"))
 ```
 
 #### Table S5
@@ -489,9 +512,9 @@ fwrite(tab_all, paste0("outputs/IR_allage_subregion_tab_", tstamp(), ".csv"))
 Expected number of cases by country
 
 ``` r
-pred <- readRDS("outputs/summary_case_pred_country_20230208.rds")
-lower <- readRDS("outputs/summary_case_lower_country_20230208.rds")
-upper <- readRDS("outputs/summary_case_upper_country_20230208.rds")
+pred <- readRDS("output/summary_case_pred_country_20230208.rds")
+lower <- readRDS("output/summary_case_lower_country_20230208.rds")
+upper <- readRDS("output/summary_case_upper_country_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred
@@ -509,7 +532,7 @@ for(i in 1:5) {
   tab[, i+1] <- format_mean_95CI(list(pred[[i]]$data$Case, lower[[i]]$data$Case, upper[[i]]$data$Case), digits=0)
 }
 
-data.table::fwrite(tab, paste0("outputs/case_country_tab_", tstamp(), ".csv"))
+data.table::fwrite(tab, paste0("output/case_country_tab_", tstamp(), ".csv"))
 ```
 
 #### Table S6
@@ -517,9 +540,9 @@ data.table::fwrite(tab, paste0("outputs/case_country_tab_", tstamp(), ".csv"))
 Expected number of cases by Africa sub-region
 
 ``` r
-pred <- readRDS("outputs/summary_case_pred_subregion_20230208.rds")
-lower <- readRDS("outputs/summary_case_lower_subregion_20230208.rds")
-upper <- readRDS("outputs/summary_case_upper_subregion_20230208.rds")
+pred <- readRDS("output/summary_case_pred_subregion_20230208.rds")
+lower <- readRDS("output/summary_case_lower_subregion_20230208.rds")
+upper <- readRDS("output/summary_case_upper_subregion_20230208.rds")
 
 estimates <- vector("list", 3) 
 estimates[[1]] <- pred
@@ -537,7 +560,7 @@ for(i in 1:5) {
   tab[, i+1] <- format_mean_95CI(list(pred[[i]]$data$Case, lower[[i]]$data$Case, upper[[i]]$data$Case), digits=0)
 }
 
-data.table::fwrite(tab, paste0("outputs/case_subregion_tab_", tstamp(), ".csv"))
+data.table::fwrite(tab, paste0("output/case_subregion_tab_", tstamp(), ".csv"))
 ```
 
 ### Supplementary figures
@@ -554,5 +577,3 @@ for(i in 1:length(ag)){
   ggsave(paste0("plots/ir_pred_", ag[i], "_", tstamp(),".png"), p, width=7.4, height=7.4*map_ratio(r), units="in")
 }
 ```
-
-\`\`\`
